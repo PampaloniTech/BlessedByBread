@@ -1,103 +1,915 @@
-// main.js – shared site behavior
+/* =========================================
+   BASE STYLES
+========================================= */
 
-(function () {
-    const yearEl = document.getElementById('year');
-    if (yearEl) {
-        yearEl.textContent = new Date().getFullYear();
-    }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-    const toggle = document.querySelector('.nav-toggle');
-    const menu = document.getElementById('nav-menu');
+:root {
+  --bg: #f7f0e6;
+  --bg-alt: #fdfbf7;
+  --primary: #d1b98a;
+  --primary-dark: #b99d68;
+  --accent: #a9b59f;
+  --text-main: #4a4a4a;
+  --text-strong: #7a5c46;
+  --border-soft: #e0d3c2;
+}
 
-    if (toggle && menu) {
-        toggle.addEventListener('click', () => {
-            const expanded = toggle.getAttribute('aria-expanded') === 'true';
-            toggle.setAttribute('aria-expanded', String(!expanded));
-            menu.classList.toggle('open');
-        });
-    }
-})();
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.65;
+}
 
-// ------------------------------------------------------
-// "Order for This Week": show options, then email or SMS
-// ------------------------------------------------------
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-    const toggleBtn = document.getElementById("orderOptionsToggle");
-    const panel = document.getElementById("orderOptionsPanel");
+a {
+  color: var(--text-strong);
+  text-decoration: none;
+}
 
-    if (!toggleBtn || !panel) return;
+a:hover {
+  text-decoration: underline;
+}
 
-    const template = encodeURIComponent(
-        `Hi Lise! This is <your full name>. I’d like to place an order for the following items:
+/* Layout helpers */
 
-👉 Artisan White
-Quantity:
+.container {
+  width: min(1100px, 100% - 2rem);
+  margin: 0 auto;
+}
 
-👉 Artisan White/Wheat
-Quantity:
+.narrow {
+  max-width: 720px;
+  margin: 0 auto;
+}
 
-👉 Focaccia
-Quantity / Flavor:
+.text-centered {
+  text-align: center;
+}
 
-👉 Cinnamon Rolls
-Quantity (half dozen / full dozen):
+/* Visually hidden text for a11y */
 
-👉 Rosemary Olive Oil Bread
-Quantity:
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
-👉 Sandwich Loaf
-White or Wheat?
-Quantity:
 
-👉 Seeded Sandwich Loaf
-Quantity:
+/* =========================================
+   HEADER & NAVIGATION
+========================================= */
 
-👉 Bread of the Month
-Quantity:
+.site-header {
+  background-color: var(--bg-alt);
+  border-bottom: 1px solid var(--border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
 
-Pickup/Delivery Date Requested:
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+}
 
-Any Notes or Special Requests:
+.logo img {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  object-fit: contain;
+}
 
-Thank you!`
-    );
+.main-nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.25rem;
+  padding: 0;
+  margin: 0;
+  align-items: center;
+}
 
-    const emailLink = `mailto:blessedbybread@gmail.com?subject=Weekly%20Bread%20Order&body=${template}`;
-    const smsLink = `sms:17036772366?&body=${template}`;
+.main-nav a {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
 
-    // Toggle the panel open/closed
-    toggleBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const isHidden = panel.hasAttribute("hidden");
-        if (isHidden) {
-            panel.removeAttribute("hidden");
-            panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        } else {
-            panel.setAttribute("hidden", "");
-        }
-    });
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  padding: 0;
+}
 
-    // Close button inside the panel (the "×")
-    const closeBtn = panel.querySelector(".order-options-close");
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            panel.setAttribute("hidden", "");
-        });
-    }
+.nav-toggle-bar {
+  width: 24px;
+  height: 2px;
+  background-color: var(--text-main);
+  display: block;
+  position: relative;
+}
 
-    // Handle clicks on "Email Lise" and "Text Lise"
-    panel.addEventListener("click", (e) => {
-        const target = e.target;
-        if (!(target instanceof HTMLElement)) return;
+.nav-toggle-bar::before,
+.nav-toggle-bar::after {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background-color: var(--text-main);
+  position: absolute;
+  left: 0;
+}
 
-        const method = target.dataset.orderMethod;
-        if (!method) return;
+.nav-toggle-bar::before {
+  top: -7px;
+}
 
-        if (method === "email") {
-            window.location.href = emailLink;
-        } else if (method === "sms") {
-            window.location.href = smsLink;
-        }
-    });
-});
+.nav-toggle-bar::after {
+  top: 7px;
+}
+
+
+/* =========================================
+   GLOBAL TYPOGRAPHY
+========================================= */
+
+h1,
+h2,
+h3 {
+  font-family: "Playfair Display", serif;
+  color: var(--text-strong);
+}
+
+.section h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.section h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.section h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+
+/* =========================================
+   SECTIONS & GENERAL LAYOUT
+========================================= */
+
+.section {
+  padding: 2.5rem 0;
+}
+
+.section.alt {
+  background-color: var(--bg-alt);
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.25rem;
+  align-items: center;
+}
+
+.section-photo {
+  max-width: 480px;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  margin: 0 auto;
+}
+
+
+/* =========================================
+   HERO (HOME)
+========================================= */
+
+.hero {
+  padding: 2.5rem 0 1.5rem;
+  background: linear-gradient(to bottom, var(--bg-alt), var(--bg));
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 2.6vw + 1rem, 2.7rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.hero-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero-image img {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 26px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-strong);
+  border-color: var(--accent);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(169, 181, 159, 0.1);
+}
+
+
+/* =========================================
+   HOME – BRAND BELIEF & LISTS
+========================================= */
+
+/* Brand-belief block on home */
+
+.brand-belief {
+  text-align: center;
+}
+
+.brand-belief p {
+  margin-top: 1.25rem;
+}
+
+.brand-belief-photo {
+  max-width: 420px;
+}
+
+/* Sourdough benefits list */
+
+.sourdough-list {
+  padding-left: 1.1rem;
+  margin: 1.5rem 0;
+}
+
+.sourdough-list li {
+  margin-bottom: 0.8rem;
+}
+
+
+/* =========================================
+   OUR BREADS PAGE
+========================================= */
+
+.bread-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.75rem;
+  margin-top: 2rem;
+}
+
+.bread-card {
+  background-color: var(--bg-alt);
+  border-radius: 18px;
+  padding: 1.3rem;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.bread-card img {
+  width: 100%;
+  height: 300px;          /* consistent height */
+  object-fit: cover;      /* crops gracefully */
+  border-radius: 18px;
+  margin-bottom: 0.9rem;
+  display: block;
+}
+
+.bread-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.bread-card p {
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  margin-top: auto;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.price .note {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.bread-month {
+  border-color: var(--accent);
+}
+
+
+/* =========================================
+   HOW TO ORDER PAGE
+========================================= */
+
+.order-page h1 {
+  margin-bottom: 1.75rem;
+}
+
+.order-page h2 {
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.order-page h2:first-of-type {
+  margin-top: 1.25rem; /* keep first section a bit closer to the title */
+}
+
+.order-page h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* tighten the phone/email block slightly */
+.order-page .contact-lines {
+  margin: 1rem 0 1.5rem;
+}
+
+/* CTA button at bottom */
+.order-page .section-bottom-cta {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+
+/* =========================================
+   REVIEWS / TESTIMONIALS PAGE
+========================================= */
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.testimonial-card {
+  background-color: var(--bg-alt);
+  border-radius: 18px;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  font-size: 0.98rem;
+}
+
+.testimonial-name {
+  margin-top: 0.75rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* Reviews page hero spacing */
+
+.testimonials-hero .section-photo {
+  margin-bottom: 1.5rem;
+}
+
+.testimonials-hero h1 {
+  margin-top: 0;
+  font-size: 1.9rem;
+  line-height: 1.3;
+}
+
+/* Testimonial card typography */
+
+.testimonial-card p {
+  margin: 0;
+}
+
+.testimonial-card p + .testimonial-name {
+  margin-top: 0.75rem;
+}
+
+
+/* =========================================
+   RECIPES PAGE
+========================================= */
+
+.recipe-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+}
+
+/* Recipe hero image */
+
+.recipe-hero-photo {
+  max-width: 480px;
+  margin: 1.75rem auto 2.25rem;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+  display: block;
+}
+
+/* Subheading under Ingredients */
+
+.recipe-subhead {
+  font-family: "Nunito", sans-serif;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-strong);
+}
+
+.ingredients-list,
+.instructions-list {
+  padding-left: 1.25rem;
+}
+
+
+/* =========================================
+   ABOUT LISE PAGE
+========================================= */
+
+.about-page {
+  padding-top: 3.5rem;   /* more room under the nav */
+  padding-bottom: 3rem;
+}
+
+.about-columns {
+  gap: 3rem;             /* more horizontal breathing room */
+}
+
+.about-page h1 {
+  font-size: 2.2rem;     /* slightly smaller for better balance */
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  color: var(--text-strong);
+}
+
+.about-page .text-column p {
+  margin-bottom: 1.45rem;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.about-page .image-column img {
+  width: 100%;
+  max-width: 480px;      /* a bit smaller than full column */
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
+  display: block;
+  margin: 0 auto;
+}
+
+.about-page .text-column {
+  margin-top: 1.25rem;
+}
+
+
+/* =========================================
+   CONTACT PAGE
+========================================= */
+
+.contact-page {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.contact-page h1 {
+  text-align: center;
+  margin-bottom: 0.75rem;
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.contact-intro {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 1.75rem;
+  font-size: 1.07rem;
+  line-height: 1.6;
+}
+
+.contact-card {
+  background-color: var(--bg-alt);
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  padding: 1.7rem 1.9rem;
+  margin: 0 auto 2.25rem;
+  max-width: 620px;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.contact-card p {
+  margin-bottom: 0.9rem;
+}
+
+.contact-card strong {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.contact-card .contact-lines {
+  margin-bottom: 1.2rem;
+}
+
+.contact-links {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.contact-links p {
+  margin-bottom: 0.5rem;
+  font-size: 1.02rem;
+}
+
+
+/* =========================================
+   BUSINESS INFO PAGE
+========================================= */
+
+.business-page {
+  padding-top: 3.25rem;
+}
+
+.business-block h1,
+.business-block h2 {
+  margin-bottom: 1.1rem;
+}
+
+.business-block + .business-block {
+  margin-top: 2.75rem;
+}
+
+/* keep both images at a comfortable, matching width on larger screens */
+
+.business-page .section-photo {
+  max-width: 520px;
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.10);
+  margin-bottom: 0; /* spacing comes from .business-block */
+}
+
+
+/* =========================================
+   CTA STRIP (HOME)
+========================================= */
+
+.cta-strip {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.cta-strip h2 {
+  color: #fff;
+}
+
+.cta-strip-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.site-footer {
+  background-color: var(--bg-alt);
+  border-top: 1px solid var(--border-soft);
+  padding: 1.75rem 0 2.25rem;
+  margin-top: 2rem;
+}
+
+.footer-inner {
+  text-align: center;
+}
+
+.footer-brand {
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin: 0.75rem 0;
+}
+
+.footer-copy {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+a:focus-visible,
+button:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.nav-toggle:focus-visible .nav-toggle-bar,
+.nav-toggle:focus-visible .nav-toggle-bar::before,
+.nav-toggle:focus-visible .nav-toggle-bar::after {
+  background-color: var(--accent);
+}
+
+
+/* =========================================
+   GLOBAL RESPONSIVE (<= 768px)
+========================================= */
+
+@media (max-width: 768px) {
+
+  /* ---- Global spacing & layout ---- */
+
+  .section {
+    padding: 2.25rem 0;
+  }
+
+  .two-column {
+    display: block;
+  }
+
+  .section-photo {
+    max-width: 360px;
+  }
+
+  .logo img {
+    height: 70px;
+    width: 70px;
+  }
+
+  /* ---- Mobile nav ---- */
+
+  .main-nav ul {
+    position: absolute;
+    right: 1rem;
+    top: 64px;
+    background-color: var(--bg-alt);
+    flex-direction: column;
+    padding: 0.75rem 1rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
+    display: none;
+  }
+
+  .main-nav ul.open {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  /* ---- Hero (home) ---- */
+
+  .hero {
+    padding: 2rem 0 1.25rem;
+  }
+
+  .hero-grid {
+    display: flex;
+    flex-direction: column; /* text then image */
+    gap: 1.75rem;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 1.9rem;
+  }
+
+  .hero-actions {
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions .btn-primary,
+  .hero-actions .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .hero-image img {
+    max-width: 260px;
+    width: 100%;
+    margin: 0 auto 1.25rem;
+    border-radius: 22px;
+  }
+
+  .brand-belief .section-photo,
+  .brand-belief-photo {
+    max-width: 260px;
+    width: 100%;
+    margin: 1.5rem auto 0;
+    border-radius: 20px;
+  }
+
+  .cta-strip-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* ---- Reviews page ---- */
+
+  .testimonials-hero h1 {
+    font-size: 1.7rem;
+  }
+
+  .testimonial-card {
+    padding: 1.1rem 1.3rem;
+    font-size: 0.96rem;
+  }
+
+  /* ---- Recipes page ---- */
+
+  .recipe-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .recipe-hero-photo {
+    max-width: 340px;
+    margin: 1.5rem auto 2rem;
+    border-radius: 18px;
+  }
+
+  .recipe-page h2:first-of-type,
+  .recipe-page h1 + .recipe-hero-photo + h2 {
+    margin-top: 1.75rem !important;
+  }
+
+  /* ---- About Lise page ---- */
+
+  .about-page {
+    padding-top: 2.5rem;
+  }
+
+  .about-columns {
+    display: block;
+  }
+
+  .about-page .image-column img {
+    max-width: 340px;        /* smaller on phones */
+    margin: 0 auto 1.75rem;  /* space beneath the image */
+  }
+
+  .about-page .text-column {
+    padding: 0 1rem;
+  }
+
+  /* ---- Contact page ---- */
+
+  .contact-page {
+    padding-top: 2.25rem;
+  }
+
+  .contact-card {
+    padding: 1.4rem 1.3rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .contact-links p {
+    font-size: 0.97rem;
+  }
+
+  /* ---- Business info page ---- */
+
+  .business-page {
+    padding-top: 2.5rem;
+  }
+
+  .business-block + .business-block {
+    margin-top: 2.25rem;
+  }
+
+  .business-page .section-photo {
+    max-width: 260px;
+    margin-top: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ---- How to Order page (mobile tuning) ---- */
+
+  .order-page h1 {
+    font-size: 1.7rem;
+    line-height: 1.25;
+  }
+
+  .order-page h2 {
+    font-size: 1.35rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .order-page h3 {
+    font-size: 1.15rem;
+    margin-top: 1.4rem;
+  }
+
+  .order-page p {
+    font-size: 1rem;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+  }
+
+  .order-page ul {
+    padding-left: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .order-page ul li {
+    margin-bottom: 0.55rem;
+  }
+
+  .order-page .narrow {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .order-page h2 + p,
+  .order-page h3 + p {
+    margin-top: 0.3rem;
+  }
+
+  .order-page .section-bottom-cta {
+    margin-top: 2rem;
+  }
+}
