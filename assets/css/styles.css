@@ -183,6 +183,8 @@ h3 {
 
 .section {
   padding: 2.5rem 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 600px 100vw;
 }
 
 .section.alt {
